@@ -1,0 +1,185 @@
+# ============================================
+# Dependencies
+# ============================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ============================================
+# Build Output
+# ============================================
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# ============================================
+# IDE / Editor
+# ============================================
+# VSCode
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# WebStorm
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ============================================
+# Operating System Files
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Logs
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+pnpm-debug.log*
+
+# ============================================
+# Testing
+# ============================================
+coverage/
+*.lcov
+.nyc_output
+junit.xml
+
+# ============================================
+# Database
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+
+# Prisma
+prisma/migrations/**/migration.sql
+# Note: Keep schema.prisma and migration folders structure
+
+# TypeORM
+ormconfig.json
+# Note: Use ormconfig.ts or environment variables instead
+
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+
+# ============================================
+# Uploads (Local Development)
+# ============================================
+uploads/
+public/uploads/
+storage/
+
+# ============================================
+# Documentation
+# ============================================
+# Keep README.md but ignore generated docs
+docs/generated/
+
+# ============================================
+# Package Manager
+# ============================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.yarn/
+.pnp.*
+
+# ============================================
+# Docker
+# ============================================
+docker-compose.override.yml
+
+# ============================================
+# Certificates & Keys
+# ============================================
+*.pem
+*.key
+*.cert
+*.crt
+ssl/
+certificates/
+
+# ============================================
+# AWS / Cloud
+# ============================================
+.aws/
+.elasticbeanstalk/
+
+# ============================================
+# Miscellaneous
+# ============================================
+.eslintcache
+.prettierignore
+*.seed
+*.pid
+*.pid.lock
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
