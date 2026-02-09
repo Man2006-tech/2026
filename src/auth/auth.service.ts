@@ -45,7 +45,7 @@ export class AuthService {
 
     // TODO: Send OTP via WhatsApp 
     // For now, just return it (ONLY FOR DEVELOPMENT!)
-    console.log(`📱 OTP for ${phone}: ${code}`);
+    console.log(` OTP for ${phone}: ${code}`);
 
     return {
       message: 'OTP sent successfully',
@@ -284,7 +284,7 @@ export class AuthService {
         name: user.name,
         phone: user.phone,
         role: user.role,
-        ...(user.role === 'DRIVER' && {
+        ...(user.role === user.role && {
           verificationStatus: user.driver?.verificationStatus,
         }),
       },
@@ -297,4 +297,41 @@ export class AuthService {
     const payload = { sub: userId, role };
     return this.jwtService.sign(payload);
   }
+
+  async getProfile(userId: number) {
+  const user = await this.prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      driver: true,
+    },
+  });
+
+  if (!user) {
+    throw new UnauthorizedException('User not found');
+  }
+
+  return {
+    id: user.id,
+    phone: user.phone,
+    name: user.name,
+    cnic: user.cnic,
+    role: user.role,
+    city: user.city,
+    district: user.district,
+    country: user.country,
+    profileImage: user.profileImage,
+    rating: user.rating,
+    createdAt: user.createdAt,
+    ...(user.driver && {
+      driver: {
+        carName: user.driver.carName,
+        carColor: user.driver.carColor,
+        carType: user.driver.carType,
+        numberOfSeats: user.driver.numberOfSeats,
+        carNumberPlate: user.driver.carNumberPlate,
+        verificationStatus: user.driver.verificationStatus,
+      },
+    }),
+  };
+}
 }
