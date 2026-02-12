@@ -24,13 +24,15 @@ model User {
   // Common fields
   profileImage String?   @db.VarChar(255)
   rating       Float?    @default(0)
-  isActive     Boolean   @default(true)
+  status       UserStatus @default(ACTIVE)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   driver       Driver?
   otpCodes     OtpCode[]
-  
+  complaints   Complaint[]
+  bookings     Booking[] @relation("PassengerBookings")
+
   @@map("users")
 }
 
@@ -42,25 +44,56 @@ model Driver {
   name               String             @db.VarChar(100)
   phone              String             @db.VarChar(20)
   cnic               String             @db.VarChar(15)
-  carName            String             @db.VarChar(100)
-  carColor           String             @db.VarChar(50)
   licenseNumber      String             @db.VarChar(50)
-  carType            CarType
-  numberOfSeats      Int
-  carNumberPlate     String             @db.VarChar(20)
-  profession         String             @db.VarChar(100)
-  organization       String             @db.VarChar(100)
   
-  // Verification
+  // Status and location
   verificationStatus VerificationStatus @default(PENDING)
+  rejectionReason    String?            @db.VarChar(500)
+  rating             Float?             @default(0)
+  isOnline           Boolean            @default(false)
+  latitude           Float?
+  longitude          Float?
   
-  // Timestamps
+  // Car details
+  carName            String?            @db.VarChar(100)
+  carColor           String?            @db.VarChar(50)
+  carType            CarType?
+  numberOfSeats      Int?
+  carNumberPlate     String?            @db.VarChar(20)
+  
+  // Professional details
+  profession         String?            @db.VarChar(100)
+  organization       String?            @db.VarChar(100)
+  
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  vehicles           Vehicle[]
+  rides              Ride[]
+
   @@map("drivers")
+}
+
+model Vehicle {
+  id              Int      @id @default(autoincrement())
+  driverId        Int
+  make            String   @db.VarChar(50)
+  model           String   @db.VarChar(50)
+  year            Int
+  plateNumber     String   @unique @db.VarChar(20)
+  color           String   @db.VarChar(30)
+  registrationDoc String?  @db.VarChar(255)
+  insuranceDoc    String?  @db.VarChar(255)
+  vehiclePhotos   String?  @db.Text
+  isActive        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  deletedAt       DateTime?
+
+  driver          Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@map("vehicles")
 }
 
 model OtpCode {
@@ -78,19 +111,103 @@ model OtpCode {
   @@map("otp_codes")
 }
 
+model Complaint {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  targetId    Int
+  subject     String          @db.VarChar(255)
+  description String          @db.Text
+  status      ComplaintStatus @default(OPEN)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("complaints")
+}
+
+model Ride {
+  id              Int          @id @default(autoincrement())
+  driverId        Int
+  origin          String       @db.VarChar(255)
+  destination     String       @db.VarChar(255)
+  status          RideStatus   @default(SCHEDULED)
+  isSuspicious    Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+
+  @@map("rides")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model SystemSettings {
+  id                Int      @id @default(1)
+  baseFare          Float    @default(50.0)
+  perKmRate         Float    @default(20.0)
+  surgeMultiplier   Float    @default(1.0)
+  safetyMessage     String?  @db.Text
+  announcement      String?  @db.Text
+  updatedAt         DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
 enum Role {
   DRIVER
   PASSENGER
   ADMIN
 }
 
-enum CarType {
-  ECONOMY
-  COMFORT
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
 }
 
 enum VerificationStatus {
   PENDING
-  VERIFIED
+  APPROVED
   REJECTED
+  SUSPENDED
+  BANNED
+}
+
+enum RideStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
+}
+
+enum CarType {
+  ECONOMY
+  COMFORT
 }
