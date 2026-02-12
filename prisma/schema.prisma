@@ -1,5 +1,3 @@
-// prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,18 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ========================================
+// USER & AUTH MODELS
+// ========================================
+
 model User {
   id           Int       @id @default(autoincrement())
   phone        String    @unique @db.VarChar(20)
   name         String    @db.VarChar(100)
   cnic         String    @db.VarChar(15)
   role         Role      @default(PASSENGER)
-  
+
   // Passenger-specific fields
   city         String?   @db.VarChar(100)
   district     String?   @db.VarChar(100)
   country      String?   @db.VarChar(100)
-  
+
   // Common fields
   profileImage String?   @db.VarChar(255)
   rating       Float?    @default(0)
@@ -30,14 +32,15 @@ model User {
 
   driver       Driver?
   otpCodes     OtpCode[]
-  
+
   @@map("users")
 }
 
 model Driver {
   id                 Int                @id @default(autoincrement())
   userId             Int                @unique
-  
+  rides              Ride[]  
+
   // Driver registration fields
   name               String             @db.VarChar(100)
   phone              String             @db.VarChar(20)
@@ -50,16 +53,16 @@ model Driver {
   carNumberPlate     String             @db.VarChar(20)
   profession         String             @db.VarChar(100)
   organization       String             @db.VarChar(100)
-  
+
   // Verification
   verificationStatus VerificationStatus @default(PENDING)
-  
+
   // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@map("drivers")
 }
 
@@ -78,6 +81,47 @@ model OtpCode {
   @@map("otp_codes")
 }
 
+// ========================================
+// RIDE MODELS
+// ========================================
+
+model Ride {
+  id             Int        @id @default(autoincrement())
+  driverId       Int
+  
+  // Route
+  from           String     @db.VarChar(100)
+  to             String     @db.VarChar(100)
+  
+  departureDate  DateTime   @db.Date        // Just the date: 2026-02-15
+  departureTime  DateTime   @db.Time        // Just the time: 14:00:00
+  
+  // Seats
+  availableSeats Int
+  totalSeats     Int
+  
+  // Pricing
+  fare           Float      @default(0)
+  
+  // Status
+  status         RideStatus @default(SCHEDULED)
+  
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  driver         Driver     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  
+  @@index([from, to, departureDate])
+  @@index([driverId])
+  @@index([status])
+  @@map("rides")
+}
+
+// ========================================
+// ENUMS
+// ========================================
+
 enum Role {
   DRIVER
   PASSENGER
@@ -93,4 +137,11 @@ enum VerificationStatus {
   PENDING
   VERIFIED
   REJECTED
+}
+
+enum RideStatus {
+  SCHEDULED
+  STARTED
+  COMPLETED
+  CANCELLED
 }

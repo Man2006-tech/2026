@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { RidesModule } from './rides/rides.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { AppService } from './app.service';
       envFilePath: '.env',
     }),
     PrismaModule,
-    AuthModule, 
+    AuthModule,
+    RidesModule, 
   ],
   controllers: [AppController],
   providers: [AppService],
