@@ -36,15 +36,31 @@ model Driver {
   phone              String             @db.VarChar(20)
   cnic               String             @db.VarChar(15)
   licenseNumber      String             @db.VarChar(50)
+  
+  // Verification Docs
   cnicFrontUrl       String?            @db.VarChar(255)
   cnicBackUrl        String?            @db.VarChar(255)
   licenseFrontUrl    String?            @db.VarChar(255)
   licenseBackUrl     String?            @db.VarChar(255)
+  
+  // Status and location
   verificationStatus VerificationStatus @default(PENDING)
   rejectionReason    String?            @db.Text
   rating             Float?             @default(0)
   isOnline           Boolean            @default(false)
   currentLocation    String?
+  
+  // Legacy Car Details (Required by Auth Service)
+  carName            String?            @db.VarChar(100)
+  carColor           String?            @db.VarChar(50)
+  carType            CarType?
+  numberOfSeats      Int?
+  carNumberPlate     String?            @db.VarChar(20)
+  
+  // Professional details
+  profession         String?            @db.VarChar(100)
+  organization       String?            @db.VarChar(100)
+
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   availableTimeSlots Json?
