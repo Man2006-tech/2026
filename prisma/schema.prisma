@@ -30,8 +30,11 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  driver       Driver?
-  otpCodes     OtpCode[]
+  // Relations
+  driver            Driver?
+  otpCodes          OtpCode[]
+  complaints        Complaint[]           
+  passengerBookings Booking[]  @relation("PassengerBookings") 
   
   @@map("users")
 }
@@ -39,7 +42,6 @@ model User {
 model Driver {
   id                 Int                @id @default(autoincrement())
   userId             Int                @unique
-  rides              Ride[]  
   
   // Driver registration fields
   name               String             @db.VarChar(100)
@@ -61,32 +63,37 @@ model Driver {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
+  // Relations
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rides              Ride[]
+  vehicles           Vehicle[]          
   
   @@map("drivers")
 }
 
 model Vehicle {
-  id                   Int      @id @default(autoincrement())
+  id                   Int       @id @default(autoincrement())
   driverId             Int
-  carName              String   @db.VarChar(100)
-  carColor             String   @db.VarChar(50)
+  carName              String    @db.VarChar(100)
+  carColor             String    @db.VarChar(50)
   carType              CarType
   numberOfSeats        Int
-  carNumberPlate       String   @unique @db.VarChar(20)
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  carNumberPlate       String    @unique @db.VarChar(20)
+  isActive             Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   deletedAt            DateTime?
   modelYear            Int?
-  photoBackUrl         String?  @db.VarChar(255)
-  photoFrontUrl        String?  @db.VarChar(255)
-  photoSideUrl         String?  @db.VarChar(255)
-  registrationBackUrl  String?  @db.VarChar(255)
-  registrationFrontUrl String?  @db.VarChar(255)
-  driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  photoBackUrl         String?   @db.VarChar(255)
+  photoFrontUrl        String?   @db.VarChar(255)
+  photoSideUrl         String?   @db.VarChar(255)
+  registrationBackUrl  String?   @db.VarChar(255)
+  registrationFrontUrl String?   @db.VarChar(255)
+  
+  // Relations
+  driver               Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
-  @@index([driverId], map: "vehicles_driverId_fkey")
+  @@index([driverId])
   @@map("vehicles")
 }
 
@@ -98,10 +105,12 @@ model OtpCode {
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
   userId    Int?
+  
+  // Relations
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([phone])
-  @@index([userId], map: "otp_codes_userId_fkey")
+  @@index([userId])
   @@map("otp_codes")
 }
 
@@ -117,8 +126,8 @@ model Ride {
   from           String     @db.VarChar(100)
   to             String     @db.VarChar(100)
   
-  departureDate  DateTime   @db.Date        // Just the date: 2026-02-15
-  departureTime  DateTime   @db.Time        // Just the time: 14:00:00
+  departureDate  DateTime   @db.Date
+  departureTime  DateTime   @db.Time
   
   // Seats
   availableSeats Int
@@ -135,11 +144,29 @@ model Ride {
 
   // Relations
   driver         Driver     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  bookings       Booking[]  
   
   @@index([from, to, departureDate])
   @@index([driverId])
   @@index([status])
   @@map("rides")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@index([rideId])
+  @@index([passengerId])
+  @@map("bookings")
 }
 
 model Complaint {
@@ -152,23 +179,11 @@ model Complaint {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  // Relations
   user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("complaints")
-}
-
-model Booking {
-  id          Int           @id @default(autoincrement())
-  rideId      Int
-  passengerId Int
-  status      BookingStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
-  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
-
-  @@map("bookings")
 }
 
 model SystemSettings {
@@ -212,7 +227,7 @@ enum CarType {
 
 enum VerificationStatus {
   PENDING
-  APPROVED
+  VERIFIED
   REJECTED
   SUSPENDED
   BANNED
