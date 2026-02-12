@@ -17,12 +17,12 @@ model User {
   name         String    @db.VarChar(100)
   cnic         String    @db.VarChar(15)
   role         Role      @default(PASSENGER)
-
+  
   // Passenger-specific fields
   city         String?   @db.VarChar(100)
   district     String?   @db.VarChar(100)
   country      String?   @db.VarChar(100)
-
+  
   // Common fields
   profileImage String?   @db.VarChar(255)
   rating       Float?    @default(0)
@@ -32,7 +32,7 @@ model User {
 
   driver       Driver?
   otpCodes     OtpCode[]
-
+  
   @@map("users")
 }
 
@@ -40,7 +40,7 @@ model Driver {
   id                 Int                @id @default(autoincrement())
   userId             Int                @unique
   rides              Ride[]  
-
+  
   // Driver registration fields
   name               String             @db.VarChar(100)
   phone              String             @db.VarChar(20)
@@ -53,17 +53,41 @@ model Driver {
   carNumberPlate     String             @db.VarChar(20)
   profession         String             @db.VarChar(100)
   organization       String             @db.VarChar(100)
-
+  
   // Verification
   verificationStatus VerificationStatus @default(PENDING)
-
+  
   // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  
   @@map("drivers")
+}
+
+model Vehicle {
+  id                   Int      @id @default(autoincrement())
+  driverId             Int
+  carName              String   @db.VarChar(100)
+  carColor             String   @db.VarChar(50)
+  carType              CarType
+  numberOfSeats        Int
+  carNumberPlate       String   @unique @db.VarChar(20)
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  deletedAt            DateTime?
+  modelYear            Int?
+  photoBackUrl         String?  @db.VarChar(255)
+  photoFrontUrl        String?  @db.VarChar(255)
+  photoSideUrl         String?  @db.VarChar(255)
+  registrationBackUrl  String?  @db.VarChar(255)
+  registrationFrontUrl String?  @db.VarChar(255)
+  driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+
+  @@index([driverId], map: "vehicles_driverId_fkey")
+  @@map("vehicles")
 }
 
 model OtpCode {
@@ -73,11 +97,11 @@ model OtpCode {
   expiresAt DateTime
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
-
   userId    Int?
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([phone])
+  @@index([userId], map: "otp_codes_userId_fkey")
   @@map("otp_codes")
 }
 
@@ -118,6 +142,47 @@ model Ride {
   @@map("rides")
 }
 
+model Complaint {
+  id          Int             @id @default(autoincrement())
+  userId      Int
+  targetId    Int
+  subject     String          @db.VarChar(255)
+  description String          @db.Text
+  status      ComplaintStatus @default(OPEN)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("complaints")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model SystemSettings {
+  id                Int      @id @default(1)
+  baseFare          Float    @default(50.0)
+  perKmRate         Float    @default(20.0)
+  surgeMultiplier   Float    @default(1.0)
+  safetyMessage     String?  @db.Text
+  announcement      String?  @db.Text
+  updatedAt         DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
 // ========================================
 // ENUMS
 // ========================================
@@ -128,6 +193,18 @@ enum Role {
   ADMIN
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
 enum CarType {
   ECONOMY
   COMFORT
@@ -135,8 +212,10 @@ enum CarType {
 
 enum VerificationStatus {
   PENDING
-  VERIFIED
+  APPROVED
   REJECTED
+  SUSPENDED
+  BANNED
 }
 
 enum RideStatus {
@@ -144,4 +223,17 @@ enum RideStatus {
   STARTED
   COMPLETED
   CANCELLED
+  ONGOING
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+enum ComplaintStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED
 }
