@@ -12,7 +12,9 @@ async function bootstrap() {
   // Get config values
   const port = configService.get<number>('PORT', 3000);
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000').split(',');
+  const corsOrigin = configService
+    .get<string>('CORS_ORIGIN', 'http://localhost:3000')
+    .split(',');
 
   // CORS for Flutter app
   app.enableCors({
@@ -30,6 +32,9 @@ async function bootstrap() {
       whitelist: true,
       // forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 
