@@ -56,11 +56,6 @@ export class AdminController {
   // DRIVER & VEHICLE VERIFICATIONS
   // ─────────────────────────────────────────────────────────────────────────
 
-
-  // ─────────────────────────────────────────────────────────────────────────
-  // DRIVER & VEHICLE VERIFICATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-
   @Get('driver-verifications')
   async getPendingDriverVerifications() {
     this.logger.log('GET /admin/driver-verifications');

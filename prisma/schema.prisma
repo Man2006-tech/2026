@@ -64,16 +64,6 @@ model Driver {
   // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-
-  // Missing fields inferred from context but not in user snippet (User snippet was partial? No, looks complete for Driver but missed Vehicle relation?)
-  // User snippet has `vehicles Vehicle[]` in Vehicle model but NOT in Driver model? 
-  // Wait, User snippet Driver model:
-  //   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  //   @@map("drivers")
-  // It does NOT have `vehicles Vehicle[]`.
-  // But Vehicle model has `driver Driver`.
-  // I must add `vehicles Vehicle[]` to Driver model to match Vehicle model's relation.
-  // Also User snippet didn't show `complaints` in User but I added it back because `Complaint` model has `userId`.
   
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   vehicles           Vehicle[] 
