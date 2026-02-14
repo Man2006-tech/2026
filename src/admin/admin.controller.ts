@@ -12,17 +12,14 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import {
-  Role,
-  UserStatus,
-  VerificationStatus,
-  ComplaintStatus,
-} from '@prisma/client';
-import { RejectDriverDto } from '../driver/dto/reject-driver.dto';
+
+import { Role, UserStatus, ComplaintStatus, VerificationStatus } from '@prisma/client';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
-import { UpdateRideSuspicionDto } from './dto/update-ride-suspicion.dto';
-import { UpdateComplaintStatusDto } from './dto/update-complaint-status.dto';
 import { UpdateSystemSettingsDto } from './dto/update-system-settings.dto';
+import { UpdateComplaintStatusDto } from './dto/update-complaint-status.dto';
+import { RejectDriverDto } from './dto/reject-driver.dto';
+import { UpdateRideSuspicionDto } from './dto/update-ride-suspicion.dto';
+import { VerifyVehicleDto } from './dto/verify-vehicle.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,7 +27,7 @@ import { UpdateSystemSettingsDto } from './dto/update-system-settings.dto';
 export class AdminController {
   private readonly logger = new Logger(AdminController.name);
 
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService) { }
 
   // ─────────────────────────────────────────────────────────────────────────
   // USER MANAGEMENT
@@ -39,13 +36,13 @@ export class AdminController {
   @Get('users')
   async getUsers() {
     this.logger.log('GET /admin/users');
-    return this.adminService.getUsers();
+    return this.adminService.getAllUsers();
   }
 
   @Get('users/:id')
   async getUserProfile(@Param('id', ParseIntPipe) id: number) {
     this.logger.log(`GET /admin/users/${id}`);
-    return this.adminService.getUserProfile(id);
+    return this.adminService.getUserById(id);
   }
 
   @Put('users/:id/status')
@@ -99,12 +96,12 @@ export class AdminController {
   @Put('vehicle-verifications/:id/verify')
   async verifyVehicle(
     @Param('id', ParseIntPipe) id: number,
-    @Body('isActive') isActive: boolean,
+    @Body() dto: VerifyVehicleDto,
   ) {
     this.logger.log(
-      `PUT /admin/vehicle-verifications/${id}/verify - ${isActive}`,
+      `PUT /admin/vehicle-verifications/${id}/verify - ${dto.isActive}`,
     );
-    return this.adminService.verifyVehicle(id, isActive);
+    return this.adminService.verifyVehicle(id, dto.isActive);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -123,7 +120,7 @@ export class AdminController {
     @Body() dto: UpdateRideSuspicionDto,
   ) {
     this.logger.log(`PUT /admin/rides/${id}/suspicion - ${dto.isSuspicious}`);
-    return this.adminService.toggleRideSuspicion(id, dto.isSuspicious);
+    return this.adminService.flagSuspiciousRide(id, dto.isSuspicious);
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -133,7 +130,7 @@ export class AdminController {
   @Get('complaints')
   async getComplaints() {
     this.logger.log('GET /admin/complaints');
-    return this.adminService.getComplaints();
+    return this.adminService.getAllComplaints();
   }
 
   @Put('complaints/:id/status')

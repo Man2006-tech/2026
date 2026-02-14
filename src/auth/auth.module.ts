@@ -22,8 +22,4 @@ import { JwtStrategy } from './strategies/jwt.strategy';
   providers: [AuthService, JwtStrategy],
   exports: [AuthService],
 })
-<<<<<<<< Updated upstream:src/auth/auth.module.ts
 export class AuthModule {}
-========
-export class AuthModule {}
->>>>>>>> Stashed changes:backend/src/auth/auth.module.ts

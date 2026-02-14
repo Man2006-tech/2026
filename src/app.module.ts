@@ -2,10 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
-<<<<<<< Updated upstream
 import { AdminModule } from './admin/admin.module';
-=======
->>>>>>> Stashed changes
 import configuration from './config/configuration';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -18,18 +15,10 @@ import { AppService } from './app.service';
       envFilePath: '.env',
     }),
     PrismaModule,
-<<<<<<< Updated upstream
     AuthModule,
     AdminModule,
-=======
-    AuthModule, 
->>>>>>> Stashed changes
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-<<<<<<< Updated upstream
 export class AppModule { }
-=======
-export class AppModule {}
->>>>>>> Stashed changes
