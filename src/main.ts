@@ -7,11 +7,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Raahein');
+  logger.log('DEBUG: MAIN.TS IS RUNNING WITH UPDATED CONFIG');
 
   // Get config values
   const port = configService.get<number>('PORT', 3000);
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const corsOrigin = configService.get<string>('CORS_ORIGIN', 'http://localhost:3000').split(',');
+  const corsOrigin = configService
+    .get<string>('CORS_ORIGIN', 'http://localhost:3000')
+    .split(',');
 
   // CORS for Flutter app
   app.enableCors({
@@ -27,8 +30,11 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      // forbidNonWhitelisted: true,
       transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
     }),
   );
 

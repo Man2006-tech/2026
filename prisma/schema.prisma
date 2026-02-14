@@ -26,15 +26,15 @@ model User {
   // Common fields
   profileImage String?   @db.VarChar(255)
   rating       Float?    @default(0)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
+  isActive     Boolean       @default(true)
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
   updatedAt    DateTime  @updatedAt
 
-  // Relations
-  driver            Driver?
-  otpCodes          OtpCode[]
-  complaints        Complaint[]           
-  passengerBookings Booking[]  @relation("PassengerBookings") 
+  driver       Driver?
+  otpCodes     OtpCode[]
+  complaints   Complaint[]
+  bookings     Booking[] @relation("PassengerBookings")
   
   @@map("users")
 }
@@ -58,10 +58,14 @@ model Driver {
   
   // Verification
   verificationStatus VerificationStatus @default(PENDING)
+  rejectionReason    String?            @db.Text
   
   // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
+  
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vehicles           Vehicle[] 
 
   // Relations
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -126,8 +130,8 @@ model Ride {
   from           String     @db.VarChar(100)
   to             String     @db.VarChar(100)
   
-  departureDate  DateTime   @db.Date
-  departureTime  DateTime   @db.Time
+  departureDate  DateTime   @db.Date        // Just the date: 2026-02-15
+  departureTime  DateTime   @db.Time        // Just the time: 14:00:00
   
   // Seats
   availableSeats Int
@@ -138,35 +142,19 @@ model Ride {
   
   // Status
   status         RideStatus @default(SCHEDULED)
-  
+  isSuspicious   Boolean    @default(false)
+
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
 
   // Relations
   driver         Driver     @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  bookings       Booking[]  
+  bookings       Booking[]
   
   @@index([from, to, departureDate])
   @@index([driverId])
   @@index([status])
   @@map("rides")
-}
-
-model Booking {
-  id          Int           @id @default(autoincrement())
-  rideId      Int
-  passengerId Int
-  status      BookingStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  // Relations
-  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
-  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
-
-  @@index([rideId])
-  @@index([passengerId])
-  @@map("bookings")
 }
 
 model Complaint {
@@ -184,6 +172,20 @@ model Complaint {
 
   @@index([userId])
   @@map("complaints")
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  rideId      Int
+  passengerId Int
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
 }
 
 model SystemSettings {
@@ -208,7 +210,7 @@ enum Role {
   ADMIN
 }
 
-enum UserStatus {
+enum AccountStatus {
   ACTIVE
   SUSPENDED
   BANNED

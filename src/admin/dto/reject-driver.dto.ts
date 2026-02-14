@@ -1,12 +1,20 @@
-import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
-import { VerificationStatus } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsString, IsOptional, Length } from 'class-validator';
+
+export enum VerificationStatus {
+    PENDING = 'PENDING',
+    APPROVED = 'APPROVED',
+    REJECTED = 'REJECTED',
+    SUSPENDED = 'SUSPENDED',
+    BANNED = 'BANNED',
+}
 
 export class RejectDriverDto {
+    @IsNotEmpty()
     @IsEnum(VerificationStatus)
     status: VerificationStatus;
 
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
     @Length(1, 500)
-    rejectionReason: string;
+    rejectionReason?: string;
 }

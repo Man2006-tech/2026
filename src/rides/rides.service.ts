@@ -8,7 +8,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 
 @Injectable()
 export class RidesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(userId: number, dto: CreateRideDto) {
     // Get driver info
@@ -21,7 +21,7 @@ export class RidesService {
       throw new ForbiddenException('Only drivers can create rides');
     }
 
-    if (driver.verificationStatus !== 'VERIFIED') {
+    if (driver.verificationStatus !== 'APPROVED') {
       throw new ForbiddenException('Driver must be verified to create rides');
     }
 
@@ -35,7 +35,7 @@ export class RidesService {
         from: dto.from,
         to: dto.to,
         departureDate: new Date(dto.departureDate),
-        departureTime: departureDateTime,            
+        departureTime: departureDateTime,
         availableSeats: dto.availableSeats,
         totalSeats: driver.numberOfSeats,
         fare: 0, // Will be calculated by fare service later
@@ -70,9 +70,9 @@ export class RidesService {
 
     // Define the filter (DRY Principle)
     const whereClause = {
-      from: { contains: from }, 
+      from: { contains: from },
       to: { contains: to },
-      departureDate: searchDate, 
+      departureDate: searchDate,
       availableSeats: { gte: seats },
       status: 'SCHEDULED' as RideStatus,
     };
@@ -99,7 +99,7 @@ export class RidesService {
         take: limit,
       }),
       this.prisma.ride.count({
-        where: whereClause, 
+        where: whereClause,
       }),
     ]);
 
@@ -155,7 +155,7 @@ export class RidesService {
 
     return this.prisma.ride.update({
       where: { id },
-      data: { status: dto.status },
+      data: { status: dto.status as RideStatus },
       include: {
         driver: {
           include: {
@@ -228,133 +228,133 @@ export class RidesService {
   }
 
   // Get upcoming rides (public browsing)
-async getUpcomingRides(filters: {
-  from?: string;
-  to?: string;
-  page?: number;
-  limit?: number;
-}) {
-  const page = filters.page || 1;
-  const limit = filters.limit || 20;
-  const skip = (page - 1) * limit;
+  async getUpcomingRides(filters: {
+    from?: string;
+    to?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = filters.page || 1;
+    const limit = filters.limit || 20;
+    const skip = (page - 1) * limit;
 
-  const whereClause: any = {
-    status: 'SCHEDULED',
-    departureDate: { gte: new Date() }, // Future rides only
-  };
+    const whereClause: any = {
+      status: 'SCHEDULED',
+      departureDate: { gte: new Date() }, // Future rides only
+    };
 
-  if (filters.from) {
-    whereClause.from = { contains: filters.from, mode: 'insensitive' };
-  }
+    if (filters.from) {
+      whereClause.from = { contains: filters.from, mode: 'insensitive' };
+    }
 
-  if (filters.to) {
-    whereClause.to = { contains: filters.to, mode: 'insensitive' };
-  }
+    if (filters.to) {
+      whereClause.to = { contains: filters.to, mode: 'insensitive' };
+    }
 
-  const [rides, total] = await Promise.all([
-    this.prisma.ride.findMany({
-      where: whereClause,
-      include: {
-        driver: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                rating: true,
-                profileImage: true,
+    const [rides, total] = await Promise.all([
+      this.prisma.ride.findMany({
+        where: whereClause,
+        include: {
+          driver: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  rating: true,
+                  profileImage: true,
+                },
               },
             },
           },
         },
+        orderBy: { departureDate: 'asc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.ride.count({ where: whereClause }),
+    ]);
+
+    return { rides, total, page, totalPages: Math.ceil(total / limit) };
+  }
+
+  // // Get passengers for a specific ride (driver only)
+  // async getRidePassengers(rideId: number, userId: number) {
+  //   const ride = await this.prisma.ride.findUnique({
+  //     where: { id: rideId },
+  //     include: { driver: true, bookings: true },
+  //   });
+
+  //   if (!ride) {
+  //     throw new NotFoundException('Ride not found');
+  //   }
+
+  //   if (ride.driver.userId !== userId) {
+  //     throw new ForbiddenException('Only ride owner can view passengers');
+  //   }
+
+  //   const bookings = await this.prisma.booking.findMany({
+  //     where: {
+  //       rideId,
+  //       status: { in: ['CONFIRMED', 'COMPLETED'] },
+  //     },
+  //     include: {
+  //       passenger: {
+  //         select: {
+  //           id: true,
+  //           name: true,
+  //           phone: true,
+  //           rating: true,
+  //           profileImage: true,
+  //         },
+  //       },
+  //     },
+  //   });
+
+  //   return {
+  //     ride: {
+  //       id: ride.id,
+  //       from: ride.from,
+  //       to: ride.to,
+  //       departureDate: ride.departureDate,
+  //       status: ride.status,
+  //     },
+  //     passengers: bookings.map((b) => ({
+  //       bookingId: b.id,
+  //       passenger: b.passenger,
+  //       seatsBooked: b.seatsBooked,
+  //       fare: b.fare,
+  //     })),
+  //     totalPassengers: bookings.reduce((sum, b) => sum + b.seatsBooked, 0),
+  //   };
+  // }
+
+  // Update ride details (before started)
+  async updateRide(rideId: number, userId: number, dto: UpdateRideDto) {
+    const ride = await this.prisma.ride.findUnique({
+      where: { id: rideId },
+      include: { driver: true },
+    });
+
+    if (!ride) {
+      throw new NotFoundException('Ride not found');
+    }
+
+    if (ride.driver.userId !== userId) {
+      throw new ForbiddenException('Only ride owner can update');
+    }
+
+    if (ride.status !== 'SCHEDULED') {
+      throw new ForbiddenException('Can only update scheduled rides');
+    }
+
+    return this.prisma.ride.update({
+      where: { id: rideId },
+      data: {
+        ...(dto.departureDate && { departureDate: new Date(dto.departureDate) }),
+        ...(dto.departureTime && { departureTime: new Date(`2000-01-01T${dto.departureTime}`) }),
+        ...(dto.availableSeats && { availableSeats: dto.availableSeats }),
       },
-      orderBy: { departureDate: 'asc' },
-      skip,
-      take: limit,
-    }),
-    this.prisma.ride.count({ where: whereClause }),
-  ]);
-
-  return { rides, total, page, totalPages: Math.ceil(total / limit) };
-}
-
-// // Get passengers for a specific ride (driver only)
-// async getRidePassengers(rideId: number, userId: number) {
-//   const ride = await this.prisma.ride.findUnique({
-//     where: { id: rideId },
-//     include: { driver: true, bookings: true },
-//   });
-
-//   if (!ride) {
-//     throw new NotFoundException('Ride not found');
-//   }
-
-//   if (ride.driver.userId !== userId) {
-//     throw new ForbiddenException('Only ride owner can view passengers');
-//   }
-
-//   const bookings = await this.prisma.booking.findMany({
-//     where: {
-//       rideId,
-//       status: { in: ['CONFIRMED', 'COMPLETED'] },
-//     },
-//     include: {
-//       passenger: {
-//         select: {
-//           id: true,
-//           name: true,
-//           phone: true,
-//           rating: true,
-//           profileImage: true,
-//         },
-//       },
-//     },
-//   });
-
-//   return {
-//     ride: {
-//       id: ride.id,
-//       from: ride.from,
-//       to: ride.to,
-//       departureDate: ride.departureDate,
-//       status: ride.status,
-//     },
-//     passengers: bookings.map((b) => ({
-//       bookingId: b.id,
-//       passenger: b.passenger,
-//       seatsBooked: b.seatsBooked,
-//       fare: b.fare,
-//     })),
-//     totalPassengers: bookings.reduce((sum, b) => sum + b.seatsBooked, 0),
-//   };
-// }
-
-// Update ride details (before started)
-async updateRide(rideId: number, userId: number, dto: UpdateRideDto) {
-  const ride = await this.prisma.ride.findUnique({
-    where: { id: rideId },
-    include: { driver: true },
-  });
-
-  if (!ride) {
-    throw new NotFoundException('Ride not found');
+    });
   }
-
-  if (ride.driver.userId !== userId) {
-    throw new ForbiddenException('Only ride owner can update');
-  }
-
-  if (ride.status !== 'SCHEDULED') {
-    throw new ForbiddenException('Can only update scheduled rides');
-  }
-
-  return this.prisma.ride.update({
-    where: { id: rideId },
-    data: {
-      ...(dto.departureDate && { departureDate: new Date(dto.departureDate) }),
-      ...(dto.departureTime && { departureTime: new Date(`2000-01-01T${dto.departureTime}`) }),
-      ...(dto.availableSeats && { availableSeats: dto.availableSeats }),
-    },
-  });
-}
 }
