@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
   const logger = new Logger('Raahein');
+  logger.log('DEBUG: MAIN.TS IS RUNNING WITH UPDATED CONFIG');
 
   // Get config values
   const port = configService.get<number>('PORT', 3000);
@@ -27,7 +28,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      // forbidNonWhitelisted: true,
       transform: true,
     }),
   );

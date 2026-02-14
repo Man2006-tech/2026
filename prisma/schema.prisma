@@ -7,72 +7,76 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ========================================
+// USER & AUTH MODELS
+// ========================================
+
 model User {
   id           Int       @id @default(autoincrement())
   phone        String    @unique @db.VarChar(20)
   name         String    @db.VarChar(100)
   cnic         String    @db.VarChar(15)
   role         Role      @default(PASSENGER)
+  
+  // Passenger-specific fields
   city         String?   @db.VarChar(100)
   district     String?   @db.VarChar(100)
   country      String?   @db.VarChar(100)
+  
+  // Common fields
   profileImage String?   @db.VarChar(255)
   rating       Float?    @default(0)
-  status       UserStatus @default(ACTIVE)
-  createdAt    DateTime  @default(now())
+  isActive     Boolean       @default(true)
+  status       AccountStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now())
   updatedAt    DateTime  @updatedAt
+
   driver       Driver?
   otpCodes     OtpCode[]
   complaints   Complaint[]
   bookings     Booking[] @relation("PassengerBookings")
-
+  
   @@map("users")
 }
 
 model Driver {
   id                 Int                @id @default(autoincrement())
   userId             Int                @unique
+  rides              Ride[]  
+  
+  // Driver registration fields
   name               String             @db.VarChar(100)
   phone              String             @db.VarChar(20)
   cnic               String             @db.VarChar(15)
+  carName            String             @db.VarChar(100)
+  carColor           String             @db.VarChar(50)
   licenseNumber      String             @db.VarChar(50)
+  carType            CarType
+  numberOfSeats      Int
+  carNumberPlate     String             @db.VarChar(20)
+  profession         String             @db.VarChar(100)
+  organization       String             @db.VarChar(100)
   
-  // Verification Docs
-  cnicFrontUrl       String?            @db.VarChar(255)
-  cnicBackUrl        String?            @db.VarChar(255)
-  licenseFrontUrl    String?            @db.VarChar(255)
-  licenseBackUrl     String?            @db.VarChar(255)
-  
-  // Status and location
+  // Verification
   verificationStatus VerificationStatus @default(PENDING)
   rejectionReason    String?            @db.Text
-  rating             Float?             @default(0)
-  isOnline           Boolean            @default(false)
-  currentLocation    String?
   
-  // Legacy Car Details (Required by Auth Service)
-  carName            String?            @db.VarChar(100)
-  carColor           String?            @db.VarChar(50)
-  carType            CarType?
-  numberOfSeats      Int?
-  carNumberPlate     String?            @db.VarChar(20)
-  
-  // Professional details
-  profession         String?            @db.VarChar(100)
-  organization       String?            @db.VarChar(100)
-
+  // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-  availableTimeSlots Json?
-  availableWeekdays  Json?
-  dateOfBirth        DateTime?
-  drivingExperience  Int?
-  emergencyContact   String?            @db.VarChar(20)
-  gender             Gender?
-  selfieUrl          String?            @db.VarChar(255)
+
+  // Missing fields inferred from context but not in user snippet (User snippet was partial? No, looks complete for Driver but missed Vehicle relation?)
+  // User snippet has `vehicles Vehicle[]` in Vehicle model but NOT in Driver model? 
+  // Wait, User snippet Driver model:
+  //   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  //   @@map("drivers")
+  // It does NOT have `vehicles Vehicle[]`.
+  // But Vehicle model has `driver Driver`.
+  // I must add `vehicles Vehicle[]` to Driver model to match Vehicle model's relation.
+  // Also User snippet didn't show `complaints` in User but I added it back because `Complaint` model has `userId`.
+  
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  vehicles           Vehicle[]
-  rides              Ride[]
+  vehicles           Vehicle[] 
 
   @@map("drivers")
 }
@@ -116,6 +120,45 @@ model OtpCode {
   @@map("otp_codes")
 }
 
+// ========================================
+// RIDE MODELS
+// ========================================
+
+model Ride {
+  id             Int        @id @default(autoincrement())
+  driverId       Int
+  
+  // Route
+  from           String     @db.VarChar(100)
+  to             String     @db.VarChar(100)
+  
+  departureDate  DateTime   @db.Date        // Just the date: 2026-02-15
+  departureTime  DateTime   @db.Time        // Just the time: 14:00:00
+  
+  // Seats
+  availableSeats Int
+  totalSeats     Int
+  
+  // Pricing
+  fare           Float      @default(0)
+  
+  // Status
+  status         RideStatus @default(SCHEDULED)
+  isSuspicious   Boolean    @default(false)
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // Relations
+  driver         Driver     @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  bookings       Booking[]
+  
+  @@index([from, to, departureDate])
+  @@index([driverId])
+  @@index([status])
+  @@map("rides")
+}
+
 model Complaint {
   id          Int             @id @default(autoincrement())
   userId      Int
@@ -129,22 +172,6 @@ model Complaint {
   user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("complaints")
-}
-
-model Ride {
-  id              Int          @id @default(autoincrement())
-  driverId        Int
-  origin          String       @db.VarChar(255)
-  destination     String       @db.VarChar(255)
-  status          RideStatus   @default(SCHEDULED)
-  isSuspicious    Boolean      @default(false)
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-
-  driver          Driver       @relation(fields: [driverId], references: [id], onDelete: Cascade)
-  bookings        Booking[]
-
-  @@map("rides")
 }
 
 model Booking {
@@ -173,13 +200,17 @@ model SystemSettings {
   @@map("system_settings")
 }
 
+// ========================================
+// ENUMS
+// ========================================
+
 enum Role {
   DRIVER
   PASSENGER
   ADMIN
 }
 
-enum UserStatus {
+enum AccountStatus {
   ACTIVE
   SUSPENDED
   BANNED
@@ -206,9 +237,10 @@ enum VerificationStatus {
 
 enum RideStatus {
   SCHEDULED
-  ONGOING
+  STARTED
   COMPLETED
   CANCELLED
+  ONGOING
 }
 
 enum BookingStatus {

@@ -12,12 +12,7 @@ import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import {
-  Role,
-  UserStatus,
-  VerificationStatus,
-  ComplaintStatus,
-} from '@prisma/client';
+import { Role } from '@prisma/client';
 import { RejectDriverDto } from './dto/reject-driver.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateRideSuspicionDto } from './dto/update-ride-suspicion.dto';
@@ -61,51 +56,34 @@ export class AdminController {
   // DRIVER & VEHICLE VERIFICATIONS
   // ─────────────────────────────────────────────────────────────────────────
 
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DRIVER & VEHICLE VERIFICATIONS
+  // ─────────────────────────────────────────────────────────────────────────
+
   @Get('driver-verifications')
-  async getPendingDrivers() {
+  async getPendingDriverVerifications() {
     this.logger.log('GET /admin/driver-verifications');
-    return this.adminService.getPendingDrivers();
+    return this.adminService.getPendingDriverVerifications();
   }
 
   @Get('driver-verifications/:id')
-  async getDriverDetails(@Param('id', ParseIntPipe) id: number) {
+  async getDriverVerificationDetails(@Param('id', ParseIntPipe) id: number) {
     this.logger.log(`GET /admin/driver-verifications/${id}`);
-    return this.adminService.getDriverDetails(id);
+    return this.adminService.getDriverVerificationDetails(id);
   }
 
   @Put('driver-verifications/:id/verify')
   async verifyDriver(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: RejectDriverDto & { status: VerificationStatus },
+    @Body() dto: RejectDriverDto,
   ) {
-    this.logger.log(
-      `PUT /admin/driver-verifications/${id}/verify - ${dto.status}`,
-    );
-    return this.adminService.verifyDriver(
-      id,
-      dto.status,
-      dto.status === VerificationStatus.REJECTED
-        ? dto.rejectionReason
-        : undefined,
-    );
+    this.logger.log(`PUT /admin/driver-verifications/${id}/verify - ${dto.status}`);
+    return this.adminService.verifyDriver(id, dto.status, dto.rejectionReason);
   }
 
-  @Get('vehicle-verifications')
-  async getPendingVehicles() {
-    this.logger.log('GET /admin/vehicle-verifications');
-    return this.adminService.getVehiclesForVerification();
-  }
 
-  @Put('vehicle-verifications/:id/verify')
-  async verifyVehicle(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('isActive') isActive: boolean,
-  ) {
-    this.logger.log(
-      `PUT /admin/vehicle-verifications/${id}/verify - ${isActive}`,
-    );
-    return this.adminService.verifyVehicle(id, isActive);
-  }
+
 
   // ─────────────────────────────────────────────────────────────────────────
   // RIDE & BOOKING OVERSIGHT

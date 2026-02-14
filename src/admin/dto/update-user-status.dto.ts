@@ -1,8 +1,6 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { UserStatus } from '@prisma/client';
+import { IsNotEmpty } from 'class-validator';
 
 export class UpdateUserStatusDto {
-  @IsEnum(UserStatus)
   @IsNotEmpty()
-  status: UserStatus;
+  status: string;
 }

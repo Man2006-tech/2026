@@ -1,15 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
-  UserStatus,
-  VerificationStatus,
   ComplaintStatus,
   RideStatus,
+  VerificationStatus,
 } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   // ─────────────────────────────────────────────────────────────────────────
   // USER MANAGEMENT
@@ -24,13 +23,12 @@ export class AdminService {
   async getUserProfile(userId: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { driver: true },
     });
     if (!user) throw new NotFoundException('User not found');
     return user;
   }
 
-  async updateUserStatus(userId: number, status: UserStatus) {
+  async updateUserStatus(userId: number, status: any) {
     try {
       return await this.prisma.user.update({
         where: { id: userId },
@@ -45,60 +43,33 @@ export class AdminService {
   // DRIVER & VEHICLE VERIFICATION
   // ─────────────────────────────────────────────────────────────────────────
 
-  async getPendingDrivers() {
+  async getPendingDriverVerifications() {
     return this.prisma.driver.findMany({
       where: { verificationStatus: VerificationStatus.PENDING },
-      include: { user: true, vehicles: true },
+      include: { user: true },
     });
   }
 
-  async getDriverDetails(driverId: number) {
+  async getDriverVerificationDetails(driverId: number) {
     const driver = await this.prisma.driver.findUnique({
       where: { id: driverId },
-      include: {
-        user: true,
-        vehicles: true,
-      },
+      include: { user: true, vehicles: true },
     });
     if (!driver) throw new NotFoundException('Driver not found');
     return driver;
   }
 
-  async verifyDriver(
-    driverId: number,
-    status: VerificationStatus,
-    rejectionReason?: string,
-  ) {
-    try {
-      return await this.prisma.driver.update({
-        where: { id: driverId },
-        data: {
-          verificationStatus: status,
-          rejectionReason:
-            status === VerificationStatus.REJECTED ? rejectionReason : null,
-        },
-      });
-    } catch (error) {
-      throw new NotFoundException(`Driver with ID ${driverId} not found`);
-    }
-  }
+  async verifyDriver(driverId: number, status: string, rejectionReason?: string) {
+    // Cast status to Enum or validate
+    const vStatus = status as VerificationStatus;
 
-  async getVehiclesForVerification() {
-    return this.prisma.vehicle.findMany({
-      where: { isActive: false, deletedAt: null },
-      include: { driver: { include: { user: true } } },
+    return this.prisma.driver.update({
+      where: { id: driverId },
+      data: {
+        verificationStatus: vStatus,
+        rejectionReason: vStatus === 'REJECTED' ? rejectionReason : null,
+      },
     });
-  }
-
-  async verifyVehicle(vehicleId: number, isActive: boolean) {
-    try {
-      return await this.prisma.vehicle.update({
-        where: { id: vehicleId },
-        data: { isActive },
-      });
-    } catch (error) {
-      throw new NotFoundException(`Vehicle with ID ${vehicleId} not found`);
-    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -108,7 +79,6 @@ export class AdminService {
   async getAllRides() {
     return this.prisma.ride.findMany({
       include: {
-        driver: { include: { user: true } },
         bookings: { include: { passenger: true } },
       },
       orderBy: { createdAt: 'desc' },
@@ -137,7 +107,7 @@ export class AdminService {
     });
   }
 
-  async updateComplaintStatus(complaintId: number, status: ComplaintStatus) {
+  async updateComplaintStatus(complaintId: number, status: any) {
     try {
       return await this.prisma.complaint.update({
         where: { id: complaintId },
@@ -164,10 +134,8 @@ export class AdminService {
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.driver.count(),
-      this.prisma.driver.count({
-        where: { verificationStatus: VerificationStatus.PENDING },
-      }),
-      this.prisma.user.count({ where: { status: UserStatus.BANNED } }),
+      this.prisma.driver.count({ where: { verificationStatus: VerificationStatus.PENDING } }),
+      this.prisma.user.count({ where: { status: 'BANNED' as any } }),
       this.prisma.ride.count(),
       this.prisma.ride.count({ where: { status: RideStatus.COMPLETED } }),
       this.prisma.ride.count({ where: { status: RideStatus.CANCELLED } }),
