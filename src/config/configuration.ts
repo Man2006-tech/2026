@@ -11,7 +11,13 @@ export default () => ({
     username: process.env.DATABASE_USERNAME || 'root',
     password: process.env.DATABASE_PASSWORD || '',
     database: process.env.DATABASE_NAME || 'raahein_db',
+<<<<<<<< Updated upstream:src/config/configuration.ts
     url: process.env.DATABASE_URL || 'mysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@mysql.railway.internal:3306/railwaymysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@yamabiko.proxy.rlwy.net:30621/railway',
+========
+    url:
+      process.env.DATABASE_URL ||
+      'mysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@mysql.railway.internal:3306/railwaymysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@yamabiko.proxy.rlwy.net:30621/railway',
+>>>>>>>> Stashed changes:backend/src/config/configuration.ts
   },
 
   // JWT
@@ -21,7 +27,6 @@ export default () => ({
     refreshSecret: process.env.JWT_REFRESH_SECRET || 'default-refresh-secret',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRATION || '30d',
   },
-
 
   // Google Maps
   googleMaps: {

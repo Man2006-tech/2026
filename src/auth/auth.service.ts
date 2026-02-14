@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
@@ -26,7 +31,8 @@ export class AuthService {
 
     // Generate OTP
     const code = this.generateOtp();
-    const expirationMinutes = this.configService.get<number>('otp.expirationMinutes') || 10;
+    const expirationMinutes =
+      this.configService.get<number>('otp.expirationMinutes') || 10;
     const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
 
     // Delete old OTP codes for this phone
@@ -43,7 +49,7 @@ export class AuthService {
       },
     });
 
-    // TODO: Send OTP via WhatsApp 
+    // TODO: Send OTP via WhatsApp
     // For now, just return it (ONLY FOR DEVELOPMENT!)
     console.log(` OTP for ${phone}: ${code}`);
 
@@ -299,6 +305,7 @@ export class AuthService {
   }
 
   async getProfile(userId: number) {
+<<<<<<<< Updated upstream:src/auth/auth.service.ts
   const user = await this.prisma.user.findUnique({
     where: { id: userId },
     include: {
@@ -335,3 +342,41 @@ export class AuthService {
   };
 }
 }
+========
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        driver: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return {
+      id: user.id,
+      phone: user.phone,
+      name: user.name,
+      cnic: user.cnic,
+      role: user.role,
+      city: user.city,
+      district: user.district,
+      country: user.country,
+      profileImage: user.profileImage,
+      rating: user.rating,
+      createdAt: user.createdAt,
+      ...(user.driver && {
+        driver: {
+          carName: user.driver.carName,
+          carColor: user.driver.carColor,
+          carType: user.driver.carType,
+          numberOfSeats: user.driver.numberOfSeats,
+          carNumberPlate: user.driver.carNumberPlate,
+          verificationStatus: user.driver.verificationStatus,
+        },
+      }),
+    };
+  }
+}
+>>>>>>>> Stashed changes:backend/src/auth/auth.service.ts

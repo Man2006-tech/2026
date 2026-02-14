@@ -39,7 +39,14 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
+<<<<<<<< Updated upstream:src/auth/auth.controller.ts
   async getProfile(@CurrentUser() user: any) { 
     return this.authService.getProfile(user.id);
   }
 }
+========
+  async getProfile(@CurrentUser() user: any) {
+    return this.authService.getProfile(user.id);
+  }
+}
+>>>>>>>> Stashed changes:backend/src/auth/auth.controller.ts
