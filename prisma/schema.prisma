@@ -42,7 +42,6 @@ model User {
 model Driver {
   id                 Int                @id @default(autoincrement())
   userId             Int                @unique
-  rides              Ride[]  
   
   // Driver registration fields
   name               String             @db.VarChar(100)
@@ -64,44 +63,41 @@ model Driver {
   // Timestamps
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
-
-  // Missing fields inferred from context but not in user snippet (User snippet was partial? No, looks complete for Driver but missed Vehicle relation?)
-  // User snippet has `vehicles Vehicle[]` in Vehicle model but NOT in Driver model? 
-  // Wait, User snippet Driver model:
-  //   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  //   @@map("drivers")
-  // It does NOT have `vehicles Vehicle[]`.
-  // But Vehicle model has `driver Driver`.
-  // I must add `vehicles Vehicle[]` to Driver model to match Vehicle model's relation.
-  // Also User snippet didn't show `complaints` in User but I added it back because `Complaint` model has `userId`.
   
   user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   vehicles           Vehicle[] 
 
+  // Relations
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rides              Ride[]
+  vehicles           Vehicle[]          
+  
   @@map("drivers")
 }
 
 model Vehicle {
-  id                   Int      @id @default(autoincrement())
+  id                   Int       @id @default(autoincrement())
   driverId             Int
-  carName              String   @db.VarChar(100)
-  carColor             String   @db.VarChar(50)
+  carName              String    @db.VarChar(100)
+  carColor             String    @db.VarChar(50)
   carType              CarType
   numberOfSeats        Int
-  carNumberPlate       String   @unique @db.VarChar(20)
-  isActive             Boolean  @default(true)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  carNumberPlate       String    @unique @db.VarChar(20)
+  isActive             Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   deletedAt            DateTime?
   modelYear            Int?
-  photoBackUrl         String?  @db.VarChar(255)
-  photoFrontUrl        String?  @db.VarChar(255)
-  photoSideUrl         String?  @db.VarChar(255)
-  registrationBackUrl  String?  @db.VarChar(255)
-  registrationFrontUrl String?  @db.VarChar(255)
-  driver               Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  photoBackUrl         String?   @db.VarChar(255)
+  photoFrontUrl        String?   @db.VarChar(255)
+  photoSideUrl         String?   @db.VarChar(255)
+  registrationBackUrl  String?   @db.VarChar(255)
+  registrationFrontUrl String?   @db.VarChar(255)
+  
+  // Relations
+  driver               Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
-  @@index([driverId], map: "vehicles_driverId_fkey")
+  @@index([driverId])
   @@map("vehicles")
 }
 
@@ -113,10 +109,12 @@ model OtpCode {
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
   userId    Int?
+  
+  // Relations
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([phone])
-  @@index([userId], map: "otp_codes_userId_fkey")
+  @@index([userId])
   @@map("otp_codes")
 }
 
@@ -169,8 +167,10 @@ model Complaint {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  // Relations
   user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("complaints")
 }
 
@@ -229,7 +229,7 @@ enum CarType {
 
 enum VerificationStatus {
   PENDING
-  APPROVED
+  VERIFIED
   REJECTED
   SUSPENDED
   BANNED

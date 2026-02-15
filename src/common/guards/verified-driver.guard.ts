@@ -22,7 +22,7 @@ export class VerifiedDriverGuard implements CanActivate {
 
     // Correction: In strict mode, we might need to fetch the driver here if not present.
     // But for now, let's just fix the enum check.
-    if (!user.driver || user.driver.verificationStatus !== 'VERIFIED') {
+    if (!user.driver || user.driver.verificationStatus !== 'APPROVED') {
       throw new ForbiddenException('Driver not verified by admin');
     }
 
