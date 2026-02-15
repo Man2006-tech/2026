@@ -52,7 +52,7 @@ async function main() {
             carNumberPlate: 'ABC-123',
             profession: 'Driver',
             organization: 'Uber',
-            verificationStatus: 'APPROVED',
+            verificationStatus: 'VERIFIED',
         }
     });
     console.log(`Created Driver Profile for: ${driverUser.name}`);
