@@ -17,7 +17,7 @@ import { RidesModule } from './rides/rides.module';
     }),
     PrismaModule,
     AuthModule,
-    RidesModule, 
+    RidesModule,
     AdminModule,
   ],
   controllers: [AppController],
