@@ -1,5 +1,11 @@
 import { Type } from 'class-transformer';
-import { IsString, IsOptional, IsDateString, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsDateString,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class SearchRidesDto {
   @IsString()
@@ -11,13 +17,13 @@ export class SearchRidesDto {
   @IsDateString()
   departureDate: string;
 
-  @Type(() => Number) 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   seats: number = 1;
 
   @IsOptional()
-  @Type(() => Number) 
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   page?: number = 1;

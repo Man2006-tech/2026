@@ -1,4 +1,12 @@
-import { IsString, IsNotEmpty, Length, IsEnum, IsInt, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  Length,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class RegisterDriverDto {
   @IsString()

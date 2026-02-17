@@ -4,6 +4,6 @@ import { RidesService } from './rides.service';
 
 @Module({
   controllers: [RidesController],
-  providers: [RidesService]
+  providers: [RidesService],
 })
-export class RidesModule { }
+export class RidesModule {}

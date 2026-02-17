@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from '@nestjs/common';
 
 @Injectable()
 export class VerifiedDriverGuard implements CanActivate {
@@ -15,8 +20,8 @@ export class VerifiedDriverGuard implements CanActivate {
     }
 
     // The user object here comes from JwtStrategy
-    // We expect user.driver to be populated there? 
-    // Actually JwtStrategy usually returns { userId, role }. 
+    // We expect user.driver to be populated there?
+    // Actually JwtStrategy usually returns { userId, role }.
     // If this guard relies on user.driver, it must be because the strategy fetches it.
     // Let's assume request.user has the driver object attached.
 

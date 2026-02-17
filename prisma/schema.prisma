@@ -35,7 +35,10 @@ model User {
   otpCodes     OtpCode[]
   complaints   Complaint[]
   bookings     Booking[] @relation("PassengerBookings")
-  
+
+  reviewsGiven     Review[] @relation("ReviewsGiven")     
+  reviewsReceived  Review[] @relation("ReviewsReceived")  
+  rideRequests  RideRequest[] @relation("PassengerRideRequests")
   @@map("users")
 }
 
@@ -174,10 +177,13 @@ model Complaint {
   @@map("complaints")
 }
 
+
 model Booking {
   id          Int           @id @default(autoincrement())
   rideId      Int
   passengerId Int
+  seatsBooked Int           @default(1)    // ← ADD THIS LINE
+  fare        Float         @default(0)    // ← ADD THIS LINE
   status      BookingStatus @default(PENDING)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -185,6 +191,9 @@ model Booking {
   ride        Ride          @relation(fields: [rideId], references: [id], onDelete: Cascade)
   passenger   User          @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
 
+  @@index([rideId])          // ← ADD THIS LINE
+  @@index([passengerId])     // ← ADD THIS LINE
+  review      Review?  // ← ADD THIS
   @@map("bookings")
 }
 
@@ -199,6 +208,63 @@ model SystemSettings {
 
   @@map("system_settings")
 }
+
+
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int      @unique
+  reviewerId  Int      // who gave the review (passenger)
+  revieweeId  Int      // who received the review (driver)
+  rating      Int      // 1-5 stars
+  tags        String?  @db.Text // JSON array: ["Punctual", "Safe Driving"]
+  comment     String?  @db.VarChar(250)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reviewer    User     @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewee    User     @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  @@index([revieweeId])
+  @@index([reviewerId])
+  @@map("reviews")
+}
+
+model RideRequest {
+  id            Int      @id @default(autoincrement())
+  passengerId   Int
+
+  // Route fields (matches frontend From/To fields)
+  from          String   @db.VarChar(100)
+  to            String   @db.VarChar(100)
+
+  // Time range (matches frontend "Preferred Time Range" with Earliest + Latest)
+  earliestDate  DateTime @db.Date
+  earliestTime  DateTime @db.Time
+  latestTime    DateTime @db.Time
+
+  // Seat and price (matches frontend "Seats Needed" and "Offer per seat")
+  seatsNeeded   Int
+  offerPerSeat  Float?
+
+  // Status lifecycle: ACTIVE → FULFILLED / CANCELLED / EXPIRED
+  status        RideRequestStatus @default(ACTIVE)
+
+  // Auto-expire after 24 hours
+  expiresAt     DateTime
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  passenger     User     @relation("PassengerRideRequests", fields: [passengerId], references: [id], onDelete: Cascade)
+
+  @@index([from, to, earliestDate])
+  @@index([passengerId])
+  @@index([status])
+  @@map("ride_requests")
+}
+
 
 // ========================================
 // ENUMS
@@ -247,10 +313,18 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+  COMPLETED
 }
 
 enum ComplaintStatus {
   OPEN
   IN_REVIEW
   RESOLVED
+}
+
+enum RideRequestStatus {
+  ACTIVE
+  FULFILLED
+  CANCELLED
+  EXPIRED
 }

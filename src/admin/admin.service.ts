@@ -8,7 +8,7 @@ import {
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   // ─────────────────────────────────────────────────────────────────────────
   // USER MANAGEMENT
@@ -59,7 +59,11 @@ export class AdminService {
     return driver;
   }
 
-  async verifyDriver(driverId: number, status: string, rejectionReason?: string) {
+  async verifyDriver(
+    driverId: number,
+    status: string,
+    rejectionReason?: string,
+  ) {
     // Cast status to Enum or validate
     const vStatus = status as VerificationStatus;
 
@@ -134,7 +138,9 @@ export class AdminService {
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.driver.count(),
-      this.prisma.driver.count({ where: { verificationStatus: VerificationStatus.PENDING } }),
+      this.prisma.driver.count({
+        where: { verificationStatus: VerificationStatus.PENDING },
+      }),
       this.prisma.user.count({ where: { status: 'BANNED' as any } }),
       this.prisma.ride.count(),
       this.prisma.ride.count({ where: { status: RideStatus.COMPLETED } }),

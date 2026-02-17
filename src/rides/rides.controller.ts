@@ -74,11 +74,11 @@ export class RidesController {
   }
 
   // Get passengers for my ride
-//   @Get(':id/passengers')
-//   @UseGuards(JwtAuthGuard)
-//   async getRidePassengers(@Param('id', ParseIntPipe) id: number, @Request() req) {
-//     return this.ridesService.getRidePassengers(id, req.user.id);
-//   }
+  //   @Get(':id/passengers')
+  //   @UseGuards(JwtAuthGuard)
+  //   async getRidePassengers(@Param('id', ParseIntPipe) id: number, @Request() req) {
+  //     return this.ridesService.getRidePassengers(id, req.user.id);
+  //   }
 
   // Update ride details
   @Put(':id')
