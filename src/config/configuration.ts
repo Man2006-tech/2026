@@ -11,7 +11,9 @@ export default () => ({
     username: process.env.DATABASE_USERNAME || 'root',
     password: process.env.DATABASE_PASSWORD || '',
     database: process.env.DATABASE_NAME || 'raahein_db',
-    url: process.env.DATABASE_URL || 'mysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@yamabiko.proxy.rlwy.net:30621/railway',
+    url:
+      process.env.DATABASE_URL ||
+      'mysql://root:lKfUHljVJckBEFwyJwqBVceXXMQsxWpP@yamabiko.proxy.rlwy.net:30621/railway',
   },
 
   // JWT

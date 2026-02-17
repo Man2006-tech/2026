@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateRideDto } from './dto/create-ride.dto';
 import { UpdateRideStatusDto } from './dto/update-ride-status.dto';
@@ -8,7 +12,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 
 @Injectable()
 export class RidesService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateRideDto) {
     // Get driver info
@@ -26,7 +30,9 @@ export class RidesService {
     }
 
     // Parse date and time
-    const departureDateTime = new Date(`${dto.departureDate}T${dto.departureTime}`);
+    const departureDateTime = new Date(
+      `${dto.departureDate}T${dto.departureTime}`,
+    );
 
     // Create ride
     const ride = await this.prisma.ride.create({
@@ -186,8 +192,14 @@ export class RidesService {
       throw new ForbiddenException('Only the ride owner can cancel');
     }
 
-    if (ride.status === 'COMPLETED' || ride.status === 'CANCELLED' || ride.status === 'STARTED') {
-      throw new ForbiddenException('Cannot cancel ride that has started, completed, or already cancelled');
+    if (
+      ride.status === 'COMPLETED' ||
+      ride.status === 'CANCELLED' ||
+      ride.status === 'STARTED'
+    ) {
+      throw new ForbiddenException(
+        'Cannot cancel ride that has started, completed, or already cancelled',
+      );
     }
 
     return this.prisma.ride.update({
@@ -351,8 +363,12 @@ export class RidesService {
     return this.prisma.ride.update({
       where: { id: rideId },
       data: {
-        ...(dto.departureDate && { departureDate: new Date(dto.departureDate) }),
-        ...(dto.departureTime && { departureTime: new Date(`2000-01-01T${dto.departureTime}`) }),
+        ...(dto.departureDate && {
+          departureDate: new Date(dto.departureDate),
+        }),
+        ...(dto.departureTime && {
+          departureTime: new Date(`2000-01-01T${dto.departureTime}`),
+        }),
         ...(dto.availableSeats && { availableSeats: dto.availableSeats }),
       },
     });
