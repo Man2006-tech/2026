@@ -1,0 +1,89 @@
+[33mcommit 4f81e15393c66c4af8d900fb164bacaa36666fe3[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/ridebooking-module[m[33m)[m
+Merge: 7fff44a 04933ab
+Author: Man2006-tech <mabdullahnadeem2006@gmail.com>
+Date:   Tue Feb 17 21:41:49 2026 +0500
+
+    Kept my version during merge
+
+[33mcommit 04933abfcee2dc40e60471c9cb7784fb745b9c46[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: Man2006-tech <mabdullahnadeem2006@gmail.com>
+Date:   Tue Feb 17 21:21:30 2026 +0500
+
+    Added new files and updates
+
+M	prisma/schema.prisma
+M	prisma/seed.ts
+M	src/admin/admin.controller.ts
+M	src/admin/admin.service.ts
+M	src/admin/dto/reject-driver.dto.ts
+M	src/admin/dto/verify-vehicle.dto.ts
+M	src/app.module.ts
+M	src/auth/auth.controller.ts
+M	src/auth/auth.module.ts
+M	src/auth/auth.service.ts
+M	src/auth/dto/login.dto.ts
+M	src/auth/dto/register-driver.dto.ts
+M	src/auth/dto/register-passenger.dto.ts
+M	src/auth/dto/send-otp.dto.ts
+M	src/auth/dto/verify-otp.dto.ts
+M	src/auth/jwt-auth.guard.ts
+M	src/auth/roles.guard.ts
+M	src/auth/strategies/jwt.strategy.ts
+A	src/bookings/bookings.controller.ts
+A	src/bookings/bookings.module.ts
+A	src/bookings/bookings.service.ts
+A	src/bookings/dto/check-booking-eligibility.dto.ts
+A	src/bookings/dto/create-booking.dto.ts
+A	src/bookings/dto/update-booking-status.dto.ts
+M	src/common/common.module.ts
+M	src/common/decorators/current-user.decorator.ts
+M	src/common/decorators/public.decorator.ts
+M	src/common/decorators/roles.decorator.ts
+M	src/common/guards/jwt-auth.guard.ts
+M	src/common/guards/roles.guard.ts
+M	src/common/guards/verified-driver.guard.ts
+M	src/config/configuration.ts
+A	src/reviews/dto/create-review.dto.ts
+A	src/reviews/reviews.controller.ts
+A	src/reviews/reviews.module.ts
+A	src/reviews/reviews.service.ts
+A	src/ride-requests/dto/create-ride-request.dto.ts
+A	src/ride-requests/ride-requests.controller.ts
+A	src/ride-requests/ride-requests.module.ts
+A	src/ride-requests/ride-requests.service.ts
+M	src/rides/dto/create-ride.dto.ts
+M	src/rides/dto/search-rides.dto.ts
+M	src/rides/dto/update-ride-status.dto.ts
+M	src/rides/dto/update-ride.dto.ts
+M	src/rides/rides.controller.ts
+M	src/rides/rides.module.ts
+M	src/rides/rides.service.ts
+
+[33mcommit 7fff44a5be6ef1df3adbe8c04354fc8f80e7e5c0[m
+Merge: 2911767 b582040
+Author: talharich <tmalik.bese24seecs@seecs.edu.pk>
+Date:   Sun Feb 15 15:29:03 2026 +0500
+
+    Merge pull request #5 from Team-Raahein/feature/rides-module
+    
+    feat : minor bug fixes
+
+[33mcommit b5820407c9cc7dd20f20038de6349ad17139755e[m
+Author: tmalik <tmalik.bese24seecs@seecs.edu.pk>
+Date:   Sun Feb 15 15:26:38 2026 +0500
+
+    feat : minor bug fixes
+
+M	prisma/schema.prisma
+M	prisma/seed.ts
+M	src/common/guards/verified-driver.guard.ts
+M	src/rides/rides.service.ts
+
+[33mcommit 2911767a5b8099b4add54e829797daf5cf9be1dd[m
+Merge: a13cf3c d2ea23a
+Author: talharich <tmalik.bese24seecs@seecs.edu.pk>
+Date:   Sun Feb 15 15:15:50 2026 +0500
+
+    Merge pull request #4 from Team-Raahein/feature/rides-module
+    
+    Feature/rides module completion
