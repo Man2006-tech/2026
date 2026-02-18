@@ -22,28 +22,7 @@ import { UpdateRideDto } from './dto/update-ride.dto';
 @Controller('rides')
 export class RidesController {
   constructor(private readonly ridesService: RidesService) {}
-
-  // ========================================
-  // PUBLIC ENDPOINTS
-  // ========================================
-
-  // Browse upcoming rides
-  @Get('upcoming')
-  async getUpcomingRides(
-    @Query('from') from?: string,
-    @Query('to') to?: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ) {
-    return this.ridesService.getUpcomingRides({ from, to, page, limit });
-  }
-
-  // View single ride (public)
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.ridesService.findOne(id);
-  }
-
+  
   // ========================================
   // AUTHENTICATED ENDPOINTS
   // ========================================
@@ -74,11 +53,11 @@ export class RidesController {
   }
 
   // Get passengers for my ride
-  //   @Get(':id/passengers')
-  //   @UseGuards(JwtAuthGuard)
-  //   async getRidePassengers(@Param('id', ParseIntPipe) id: number, @Request() req) {
-  //     return this.ridesService.getRidePassengers(id, req.user.id);
-  //   }
+//   @Get(':id/passengers')
+//   @UseGuards(JwtAuthGuard)
+//   async getRidePassengers(@Param('id', ParseIntPipe) id: number, @Request() req) {
+//     return this.ridesService.getRidePassengers(id, req.user.id);
+//   }
 
   // Update ride details
   @Put(':id')
@@ -108,4 +87,26 @@ export class RidesController {
   async cancelRide(@Param('id', ParseIntPipe) id: number, @Request() req) {
     return this.ridesService.cancelRide(id, req.user.id);
   }
+
+  // ========================================
+  // PUBLIC ENDPOINTS
+  // ========================================
+
+  // Browse upcoming rides
+  @Get('upcoming')
+  async getUpcomingRides(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.ridesService.getUpcomingRides({ from, to, page, limit });
+  }
+
+  // View single ride (public)
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.ridesService.findOne(id);
+  }
+  
 }

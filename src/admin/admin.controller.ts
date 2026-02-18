@@ -25,7 +25,7 @@ import { UpdateSystemSettingsDto } from './dto/update-system-settings.dto';
 export class AdminController {
   private readonly logger = new Logger(AdminController.name);
 
-  constructor(private readonly adminService: AdminService) {}
+  constructor(private readonly adminService: AdminService) { }
 
   // ─────────────────────────────────────────────────────────────────────────
   // USER MANAGEMENT
@@ -56,10 +56,6 @@ export class AdminController {
   // DRIVER & VEHICLE VERIFICATIONS
   // ─────────────────────────────────────────────────────────────────────────
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // DRIVER & VEHICLE VERIFICATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-
   @Get('driver-verifications')
   async getPendingDriverVerifications() {
     this.logger.log('GET /admin/driver-verifications');
@@ -77,11 +73,12 @@ export class AdminController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: RejectDriverDto,
   ) {
-    this.logger.log(
-      `PUT /admin/driver-verifications/${id}/verify - ${dto.status}`,
-    );
+    this.logger.log(`PUT /admin/driver-verifications/${id}/verify - ${dto.status}`);
     return this.adminService.verifyDriver(id, dto.status, dto.rejectionReason);
   }
+
+
+
 
   // ─────────────────────────────────────────────────────────────────────────
   // RIDE & BOOKING OVERSIGHT

@@ -25,7 +25,7 @@ export class RidesService {
       throw new ForbiddenException('Only drivers can create rides');
     }
 
-    if (driver.verificationStatus !== 'APPROVED') {
+    if (driver.verificationStatus !== 'VERIFIED') {
       throw new ForbiddenException('Driver must be verified to create rides');
     }
 
